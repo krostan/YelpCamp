@@ -5,7 +5,6 @@
 //我們將在生產模式下運行代碼
 
 
-
 //我們是否再開發模式下運行
 if (process.env.NODE_ENV !== "production") {
     require('dotenv').config();
@@ -35,7 +34,9 @@ const userRoutes = require('./route/users');
 const MongoDBStore = require('connect-mongo');
 
 //const dbUrl = process.env.DB_URL //mongo DB Atlas
-const dbUrl = 'mongodb://localhost:27017/yelp-camp' //本地
+//const dbUrl = 'mongodb://localhost:27017/yelp-camp' //本地
+
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
 
 mongoose.connect(dbUrl, {
     autoIndex: true,//舊版為useCreateIndex:true
@@ -74,10 +75,11 @@ app.use(
     replaceWith: '_',
   }),
 );*/
+const secret= process.env.SECRET || 'thisshouldbeabettersecret'
 
 const store = MongoDBStore.create({
     mongoUrl: dbUrl,
-    secret: 'thisshouldbeabettersecret',
+    secret,
     touchAfter: 24 * 60 * 60,
 });
 
@@ -88,7 +90,7 @@ store.on("error",function(e){
 const sessionConfig = {
     store,//或者store:store
     name: 'session',
-    secret: 'thisshouldbeabettersecret',
+    secret,
     resave: false,
     saveUninitialized: false,
     /*基本上就是說我們的cookie 
