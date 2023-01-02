@@ -10,8 +10,7 @@ const Campground = require("../models/campground");
 
 mongoose
   .connect(
-    "mongodb://localhost:27017/yelp-camp",
-    // "mongodb+srv://our-first-user:iV24uR3VYfTdJ4Ki@cluster0.alfs8pi.mongodb.net/?retryWrites=true&w=majority",
+    "mongodb+srv://our-first-user:iV24uR3VYfTdJ4Ki@cluster0.alfs8pi.mongodb.net/?retryWrites=true&w=majority",
     {
       autoIndex: true, //舊版為useCreateIndex:true
     }
