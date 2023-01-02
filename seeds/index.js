@@ -6,16 +6,10 @@ const cities = require("./cities");
 //所以需要退出一個目錄 使用 ..
 const Campground = require("../models/campground");
 
-// mongoose.connect('mongodb://localhost:27017/yelp-camp', {
-
 mongoose
-  .connect(
-    "mongodb://localhost:27017/yelp-camp",
-    // "mongodb+srv://our-first-user:iV24uR3VYfTdJ4Ki@cluster0.alfs8pi.mongodb.net/?retryWrites=true&w=majority",
-    {
-      autoIndex: true, //舊版為useCreateIndex:true
-    }
-  )
+  .connect("mongodb://localhost:27017/yelp-camp", {
+    autoIndex: true, //舊版為useCreateIndex:true
+  })
   .then(() => {
     console.log("Database connected");
   })
@@ -32,7 +26,7 @@ const seedDB = async () => {
   await Campground.deleteMany({});
   /*const c = new Campground({ title: 'purple field' })
     await c.save();*/
-  for (let i = 0; i < 300; i++) {
+  for (let i = 0; i < 10; i++) {
     const random1000 = Math.floor(Math.random() * 1000);
     const price = Math.floor(Math.random() * 20) + 10;
     const camp = new Campground({
