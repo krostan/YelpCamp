@@ -4,50 +4,50 @@
 //但在最終部屬時
 //我們將在生產模式下運行代碼
 
-
 //我們是否再開發模式下運行
 if (process.env.NODE_ENV !== "production") {
-    require('dotenv').config();
+  require("dotenv").config();
 }
 
-const express = require('express');
-const path = require('path');
-const mongoose = require('mongoose');
-const ejsMate = require('ejs-mate');
-const session = require('express-session');
-const flash = require('connect-flash');
+const express = require("express");
+const path = require("path");
+const mongoose = require("mongoose");
+const ejsMate = require("ejs-mate");
+const session = require("express-session");
+const flash = require("connect-flash");
 
-const ExpressError = require('./utils/ExpressError')
-const methodOverride = require('method-override');
+const ExpressError = require("./utils/ExpressError");
+const methodOverride = require("method-override");
 
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const User = require('./models/user');
-const helmet = require('helmet');
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user");
+const helmet = require("helmet");
 
-const mongoSanitize = require('express-mongo-sanitize');
+const mongoSanitize = require("express-mongo-sanitize");
 
-const campgroundRoutes = require('./route/campgrounds');
-const reviewRoutes = require('./route/reviews');
-const userRoutes = require('./route/users');
+const campgroundRoutes = require("./route/campgrounds");
+const reviewRoutes = require("./route/reviews");
+const userRoutes = require("./route/users");
 
-const MongoDBStore = require('connect-mongo');
+const MongoDBStore = require("connect-mongo");
 
 //const dbUrl = process.env.DB_URL //mongo DB Atlas
 //const dbUrl = 'mongodb://localhost:27017/yelp-camp' //本地
 
-const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
-
-mongoose.connect(dbUrl, {
-    autoIndex: true,//舊版為useCreateIndex:true
-})
-    .then(() => {
-        console.log("Database connected");
-    })
-    .catch(err => {
-        console.log("OH NO MONGO CONNECTION ERROR!!!")
-        console.log(err);
-    })
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yelp-camp";
+mongoose.set("strictQuery", false);
+mongoose
+  .connect(dbUrl, {
+    autoIndex: true, //舊版為useCreateIndex:true
+  })
+  .then(() => {
+    console.log("Database connected");
+  })
+  .catch((err) => {
+    console.log("OH NO MONGO CONNECTION ERROR!!!");
+    console.log(err);
+  });
 /*const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
@@ -56,17 +56,17 @@ db.once("open", () => {
 
 const app = express();
 // 對所有EJS模板使用 EJS-LOCALS
-app.engine('ejs', ejsMate);
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.engine("ejs", ejsMate);
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 //告訴express 使用該中間件
 //表示URL編碼是甚麼 然後傳入一個擴展選項
-app.use(express.urlencoded({ extended: true }))
-app.use(methodOverride('_method'));
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
 
-app.use(express.static(path.join(__dirname, 'public')));//需要確保告訴快遞服務我們的公共目錄
-app.use(mongoSanitize());//避免當使用者透過輸入$ 來使用mongo DB的語法 避免類似SQL注入攻擊
+app.use(express.static(path.join(__dirname, "public"))); //需要確保告訴快遞服務我們的公共目錄
+app.use(mongoSanitize()); //避免當使用者透過輸入$ 來使用mongo DB的語法 避免類似SQL注入攻擊
 
 /*Both allowDots and replaceWith
 app.use(
@@ -75,94 +75,93 @@ app.use(
     replaceWith: '_',
   }),
 );*/
-const secret= process.env.SECRET || 'thisshouldbeabettersecret'
+const secret = process.env.SECRET || "thisshouldbeabettersecret";
 
 const store = MongoDBStore.create({
-    mongoUrl: dbUrl,
-    secret,
-    touchAfter: 24 * 60 * 60,
+  mongoUrl: dbUrl,
+  secret,
+  touchAfter: 24 * 60 * 60,
 });
 
-store.on("error",function(e){
-    console.log("asdasdasd",e)
-})
+store.on("error", function (e) {
+  console.log("asdasdasd", e);
+});
 
 const sessionConfig = {
-    store,//或者store:store
-    name: 'session',
-    secret,
-    resave: false,
-    saveUninitialized: false,
-    /*基本上就是說我們的cookie 
+  store, //或者store:store
+  name: "session",
+  secret,
+  resave: false,
+  saveUninitialized: false,
+  /*基本上就是說我們的cookie 
     至少是通過session所設置的cookie 
     只能通過HTTP訪問
     不能通過JavaScript訪問*/
-    cookie: {
-        httpOnly: true,
-        /*httpOnly: true,
+  cookie: {
+    httpOnly: true,
+    /*httpOnly: true,
         secure:true,這實際上會立即破壞系統
         依照程式碼 
         這個cookie應該只在https上工作
         所以https是安全的      
         但本地主機 localhost 不是https 不安全*/
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, //毫秒 秒 分鐘 小時 天  計算出一周時間 此為一周後過期
-        maxAge: 1000 * 60 * 60 * 24 * 7
-    }
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, //毫秒 秒 分鐘 小時 天  計算出一周時間 此為一周後過期
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  },
 };
 app.use(session(sessionConfig));
 app.use(flash());
 app.use(helmet());
-
 
 /*正在限制可以獲取資源的位置
 只是包含 bootstrapcdn mapbox fontawesome cdn
 作為希望應用程序能從中獲取腳本的位置*/
 
 const scriptSrcUrls = [
-    "https://stackpath.bootstrapcdn.com/",
-    "https://api.tiles.mapbox.com/",
-    "https://api.mapbox.com/",
-    "https://kit.fontawesome.com/",
-    "https://cdnjs.cloudflare.com/",
-    "https://cdn.jsdelivr.net/",
+  "https://stackpath.bootstrapcdn.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://api.mapbox.com/",
+  "https://kit.fontawesome.com/",
+  "https://cdnjs.cloudflare.com/",
+  "https://cdn.jsdelivr.net/",
 ];
 const styleSrcUrls = [
-    //"https://stackpath.bootstrapcdn.com/",
+  //"https://stackpath.bootstrapcdn.com/",
 
-    "https://kit-free.fontawesome.com/",
-    "https://api.mapbox.com/",
-    "https://api.tiles.mapbox.com/",
-    "https://fonts.googleapis.com/",
-    "https://use.fontawesome.com/",
-    "https://cdn.jsdelivr.net/"
+  "https://kit-free.fontawesome.com/",
+  "https://api.mapbox.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://fonts.googleapis.com/",
+  "https://use.fontawesome.com/",
+  "https://cdn.jsdelivr.net/",
 ];
 const connectSrcUrls = [
-    "https://api.mapbox.com/",
-    "https://a.tiles.mapbox.com/",
-    "https://b.tiles.mapbox.com/",
-    "https://events.mapbox.com/",
+  "https://api.mapbox.com/",
+  "https://a.tiles.mapbox.com/",
+  "https://b.tiles.mapbox.com/",
+  "https://events.mapbox.com/",
 ];
 const fontSrcUrls = [];
 app.use(
-    //配置helmet
-    helmet.contentSecurityPolicy({
-        directives: {
-            defaultSrc: [],
-            connectSrc: ["'self'", ...connectSrcUrls],
-            scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
-            styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
-            workerSrc: ["'self'", "blob:"],
-            objectSrc: [],
-            imgSrc: [
-                "'self'",
-                "blob:",
-                "data:",
-                "https://res.cloudinary.com/dmpihwhhz/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
-                "https://images.unsplash.com/",
-            ],
-            fontSrc: ["'self'", ...fontSrcUrls],
-        },
-    })
+  //配置helmet
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: [],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: [],
+      imgSrc: [
+        "'self'",
+        "blob:",
+        "data:",
+        "https://res.cloudinary.com/dmpihwhhz/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT!
+        "https://images.unsplash.com/",
+      ],
+      fontSrc: ["'self'", ...fontSrcUrls],
+    },
+  })
 );
 
 /*在本例中 我們需要指定為我們自動添加的身分驗證方法
@@ -184,57 +183,52 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-    //console.log(req.query);
+  //console.log(req.query);
 
-    if (req.session.returnTo) {
-        res.locals.returnTo = req.session.returnTo;
-    }
-    res.locals.currentUser = req.user;//currentUser當前用戶
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    next();
-})
+  if (req.session.returnTo) {
+    res.locals.returnTo = req.session.returnTo;
+  }
+  res.locals.currentUser = req.user; //currentUser當前用戶
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
 
-app.get('/fakeUser', async (req, res) => {
-    const user = new User({ email: 'cat@gmail.com', username: 'cat' });
-    const newUser = await User.register(user, 'bear');
-    res.send(newUser);
-})
+app.get("/fakeUser", async (req, res) => {
+  const user = new User({ email: "cat@gmail.com", username: "cat" });
+  const newUser = await User.register(user, "bear");
+  res.send(newUser);
+});
 
-app.use('/', userRoutes);
-app.use('/campgrounds', campgroundRoutes);
-app.use('/campgrounds/:id/reviews', reviewRoutes)
+app.use("/", userRoutes);
+app.use("/campgrounds", campgroundRoutes);
+app.use("/campgrounds/:id/reviews", reviewRoutes);
 
-app.get('/', (req, res) => {
-    res.render('home');
-})
+app.get("/", (req, res) => {
+  res.render("home");
+});
 
 //對每個請求建立一個應用程序
 //對於每個路徑 將在此處調用此回調
-app.all('*', (req, res, next) => {
-    next(new ExpressError('Page Not Found ', 404))
-})
+app.all("*", (req, res, next) => {
+  next(new ExpressError("Page Not Found ", 404));
+});
 
 app.use((err, req, res, next) => {
-    //const { statusCode = 500, message = 'Something went wrong' } = err;
-    //為了更新err對象 從err中提取了一個變量 並為該變量指定了一個默認值
-    //所以應該改為
-    const { statusCode = 500 } = err;
-    if (!err.message) err.message = 'Something went wrong';
+  //const { statusCode = 500, message = 'Something went wrong' } = err;
+  //為了更新err對象 從err中提取了一個變量 並為該變量指定了一個默認值
+  //所以應該改為
+  const { statusCode = 500 } = err;
+  if (!err.message) err.message = "Something went wrong";
 
-    //res.status(statusCode).send(message);
-    res.status(statusCode).render('error', { err })
-    //res.send('OH NO ~~~')
-})
+  //res.status(statusCode).send(message);
+  res.status(statusCode).render("error", { err });
+  //res.send('OH NO ~~~')
+});
 
 app.listen(3000, () => {
-    console.log('Serving on port 3000');
-})
-
-
-
-
-
+  console.log("Serving on port 3000");
+});
 
 /*
 app.get('/makecampground', async (req, res) => {
