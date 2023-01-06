@@ -26,7 +26,7 @@ const seedDB = async () => {
   await Campground.deleteMany({});
   /*const c = new Campground({ title: 'purple field' })
     await c.save();*/
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 300; i++) {
     const random1000 = Math.floor(Math.random() * 1000);
     const price = Math.floor(Math.random() * 20) + 10;
     const camp = new Campground({
@@ -46,12 +46,12 @@ const seedDB = async () => {
       },
       images: [
         {
-          url: "https://res.cloudinary.com/dmpihwhhz/image/upload/v1669992667/YelpCamp/t4gznagpu66hizjoeypk.jpg",
-          filename: "YelpCamp/qnqxcywxwjtr5uyzgkj8",
+          url: "https://res.cloudinary.com/dmpihwhhz/image/upload/v1672752869/YelpCamp/1.jpg",
+          filename: "YelpCamp/1",
         },
         {
-          url: "https://res.cloudinary.com/dmpihwhhz/image/upload/v1669992666/YelpCamp/wjzgde8ozfuixn1a0nro.jpg",
-          filename: "YelpCamp/xjintynddyst2f5vb6gb",
+          url: "https://res.cloudinary.com/dmpihwhhz/image/upload/v1672752866/YelpCamp/2.jpg",
+          filename: "YelpCamp/2",
         },
       ],
     });

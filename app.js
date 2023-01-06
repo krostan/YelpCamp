@@ -34,8 +34,9 @@ const MongoDBStore = require("connect-mongo");
 
 //const dbUrl = process.env.DB_URL //mongo DB Atlas
 // const dbUrl = "mongodb://localhost:27017/yelp-camp"; //本地
+//上面兩者的資料庫不相同
 
-const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yelp-camp2";
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yelp-camp"; //此行只會連接mongo DB Atlas
 mongoose.set("strictQuery", false);
 mongoose
   .connect(dbUrl, {
